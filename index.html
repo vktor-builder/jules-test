@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bitcoin Price Chart</title>
+    <title>Crypto Price Charts</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
@@ -11,9 +11,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            height: 100vh;
+            justify-content: flex-start;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
             background-color: #f4f4f9;
         }
         .chart-container {
@@ -21,8 +22,10 @@
             max-width: 800px;
             background: white;
             padding: 20px;
+            margin-bottom: 30px;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
         }
     </style>
 </head>
@@ -33,11 +36,16 @@
         <canvas id="bitcoinChart"></canvas>
     </div>
 
+    <div class="chart-container">
+        <h2 style="text-align: center;">Ethereum Price (Last 30 Days)</h2>
+        <canvas id="ethereumChart"></canvas>
+    </div>
+
     <script>
-        async function fetchBitcoinData() {
+        async function fetchCryptoData(coinId, canvasId, label, borderColor, backgroundColor) {
             try {
-                // Fetching Bitcoin historical market chart data for the last 30 days
-                const response = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=usd&days=30&interval=daily');
+                // Fetching historical market chart data for the last 30 days
+                const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}/market_chart?vs_currency=usd&days=30&interval=daily`);
                 const data = await response.json();
 
                 // Extracting labels (dates) and data (prices)
@@ -48,32 +56,32 @@
                 });
                 const dataPoints = prices.map(price => price[1]);
 
-                renderChart(labels, dataPoints);
+                renderChart(canvasId, labels, dataPoints, label, borderColor, backgroundColor);
             } catch (error) {
-                console.error('Error fetching Bitcoin data:', error);
-                alert('Failed to fetch data. Check console for details.');
+                console.error(`Error fetching ${coinId} data:`, error);
             }
         }
 
-        function renderChart(labels, data) {
-            const ctx = document.getElementById('bitcoinChart').getContext('2d');
+        function renderChart(canvasId, labels, data, datasetLabel, borderColor, backgroundColor) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
             new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Bitcoin Price (USD)',
+                        label: datasetLabel,
                         data: data,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: borderColor,
+                        backgroundColor: backgroundColor,
                         borderWidth: 2,
                         pointRadius: 3,
-                        pointBackgroundColor: 'rgba(75, 192, 192, 1)',
+                        pointBackgroundColor: borderColor,
                         fill: true
                     }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
                     scales: {
                         x: {
                             title: {
@@ -102,8 +110,9 @@
             });
         }
 
-        // Initialize the fetch and chart rendering
-        fetchBitcoinData();
+        // Initialize the fetches and chart rendering
+        fetchCryptoData('bitcoin', 'bitcoinChart', 'Bitcoin Price (USD)', 'rgba(247, 147, 26, 1)', 'rgba(247, 147, 26, 0.2)');
+        fetchCryptoData('ethereum', 'ethereumChart', 'Ethereum Price (USD)', 'rgba(98, 126, 234, 1)', 'rgba(98, 126, 234, 0.2)');
     </script>
 
 </body>
